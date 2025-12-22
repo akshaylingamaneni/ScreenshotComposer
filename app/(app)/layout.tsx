@@ -9,6 +9,8 @@ import { HorizontalBackgroundSelector } from "@/components/horizontal-background
 import { ImageCarousel } from "@/components/image-carousel"
 import { ScreenshotShellProvider, type ShadowSettings, type CornerTexts, type TextSettings, type ImageItem } from "@/components/screenshot-shell-context"
 import { Button } from "@/components/ui/button"
+import { Switch } from "@/components/ui/switch"
+import { Label } from "@/components/ui/label"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { getFormatById } from "@/lib/formats"
 import { getRandomPattern } from "@/lib/patterns"
@@ -77,6 +79,160 @@ export default function AppLayout({
   const [canvasRef, setCanvasRef] = useState<HTMLCanvasElement | null>(null)
   const [copied, setCopied] = useState(false)
   const [showBackgroundOnly, setShowBackgroundOnly] = useState(false)
+  const [applyToAll, setApplyToAll] = useState(true)
+
+  const currentImage = images[activeIndex]
+  const effectiveBackground = currentImage?.background ?? selectedBackground
+  const effectivePadding = currentImage?.padding ?? padding[0]
+  const effectiveCornerRadius = currentImage?.cornerRadius ?? cornerRadius[0]
+  const effectiveShadow = currentImage?.shadow ?? shadow[0]
+  const effectiveShadowSettings = currentImage?.shadowSettings ?? { ...shadowSettings }
+  const effectiveCornerTexts = currentImage?.cornerTexts ?? { ...cornerTexts }
+  const effectiveTextSettings = currentImage?.textSettings ?? { ...textSettings }
+  const effectiveFormat = currentImage?.format ?? selectedFormat
+  const effectiveCanvasSize = currentImage?.canvasSize ?? canvasSize[0]
+
+  const handleBackgroundChange = useCallback((background: string) => {
+    if (applyToAll) {
+      setImages((prev) => prev.map((img) => ({ ...img, background })))
+      setSelectedBackground(background)
+    } else {
+      setImages((prev) => {
+        const newImages = [...prev]
+        if (newImages[activeIndex]) {
+          newImages[activeIndex] = { ...newImages[activeIndex], background }
+        }
+        return newImages
+      })
+    }
+  }, [activeIndex, applyToAll])
+
+  const handlePaddingChange = useCallback((value: number[]) => {
+    const paddingValue = value[0]
+    if (applyToAll) {
+      setImages((prev) => prev.map((img) => ({ ...img, padding: paddingValue })))
+      setPadding(value)
+    } else {
+      setImages((prev) => {
+        const newImages = [...prev]
+        if (newImages[activeIndex]) {
+          newImages[activeIndex] = { ...newImages[activeIndex], padding: paddingValue }
+        }
+        return newImages
+      })
+    }
+  }, [activeIndex, applyToAll])
+
+  const handleCornerRadiusChange = useCallback((value: number[]) => {
+    const radiusValue = value[0]
+    if (applyToAll) {
+      setImages((prev) => prev.map((img) => ({ ...img, cornerRadius: radiusValue })))
+      setCornerRadius(value)
+    } else {
+      setImages((prev) => {
+        const newImages = [...prev]
+        if (newImages[activeIndex]) {
+          newImages[activeIndex] = { ...newImages[activeIndex], cornerRadius: radiusValue }
+        }
+        return newImages
+      })
+    }
+  }, [activeIndex, applyToAll])
+
+  const handleShadowChange = useCallback((value: number[]) => {
+    const shadowValue = value[0]
+    if (applyToAll) {
+      setImages((prev) => prev.map((img) => ({ ...img, shadow: shadowValue })))
+      setShadow(value)
+    } else {
+      setImages((prev) => {
+        const newImages = [...prev]
+        if (newImages[activeIndex]) {
+          newImages[activeIndex] = { ...newImages[activeIndex], shadow: shadowValue }
+        }
+        return newImages
+      })
+    }
+  }, [activeIndex, applyToAll])
+
+  const handleShadowSettingsChange = useCallback((settings: ShadowSettings) => {
+    const settingsCopy = { ...settings }
+    if (applyToAll) {
+      setImages((prev) => prev.map((img) => ({ ...img, shadowSettings: settingsCopy })))
+      setShadowSettings(settingsCopy)
+    } else {
+      setImages((prev) => {
+        const newImages = [...prev]
+        if (newImages[activeIndex]) {
+          newImages[activeIndex] = { ...newImages[activeIndex], shadowSettings: settingsCopy }
+        }
+        return newImages
+      })
+    }
+  }, [activeIndex, applyToAll])
+
+  const handleCornerTextsChange = useCallback((texts: CornerTexts) => {
+    const textsCopy = { ...texts }
+    if (applyToAll) {
+      setImages((prev) => prev.map((img) => ({ ...img, cornerTexts: textsCopy })))
+      setCornerTexts(textsCopy)
+    } else {
+      setImages((prev) => {
+        const newImages = [...prev]
+        if (newImages[activeIndex]) {
+          newImages[activeIndex] = { ...newImages[activeIndex], cornerTexts: textsCopy }
+        }
+        return newImages
+      })
+    }
+  }, [activeIndex, applyToAll])
+
+  const handleTextSettingsChange = useCallback((settings: TextSettings) => {
+    const settingsCopy = { ...settings }
+    if (applyToAll) {
+      setImages((prev) => prev.map((img) => ({ ...img, textSettings: settingsCopy })))
+      setTextSettings(settingsCopy)
+    } else {
+      setImages((prev) => {
+        const newImages = [...prev]
+        if (newImages[activeIndex]) {
+          newImages[activeIndex] = { ...newImages[activeIndex], textSettings: settingsCopy }
+        }
+        return newImages
+      })
+    }
+  }, [activeIndex, applyToAll])
+
+  const handleFormatChange = useCallback((format: string) => {
+    if (applyToAll) {
+      setImages((prev) => prev.map((img) => ({ ...img, format })))
+      setSelectedFormat(format)
+    } else {
+      setImages((prev) => {
+        const newImages = [...prev]
+        if (newImages[activeIndex]) {
+          newImages[activeIndex] = { ...newImages[activeIndex], format }
+        }
+        return newImages
+      })
+    }
+  }, [activeIndex, applyToAll])
+
+  const handleCanvasSizeChange = useCallback((value: number[]) => {
+    const sizeValue = value[0]
+    if (applyToAll) {
+      setImages((prev) => prev.map((img) => ({ ...img, canvasSize: sizeValue })))
+      setCanvasSize(value)
+    } else {
+      setImages((prev) => {
+        const newImages = [...prev]
+        if (newImages[activeIndex]) {
+          newImages[activeIndex] = { ...newImages[activeIndex], canvasSize: sizeValue }
+        }
+        return newImages
+      })
+    }
+  }, [activeIndex, applyToAll])
 
   const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = event.target.files
@@ -315,7 +471,7 @@ export default function AppLayout({
 
   const handleRandomize = () => {
     const randomPattern = getRandomPattern()
-    setSelectedBackground(randomPattern.id)
+    handleBackgroundChange(randomPattern.id)
   }
 
   const showCanvas = Boolean(image || showBackgroundOnly)
@@ -327,15 +483,15 @@ export default function AppLayout({
         image,
         images,
         activeIndex,
-        padding: padding[0],
-        cornerRadius: cornerRadius[0],
-        shadow: shadow[0],
-        shadowSettings,
-        cornerTexts,
-        textSettings,
-        background: selectedBackground,
-        format: selectedFormat,
-        canvasSize: canvasSize[0],
+        padding: effectivePadding,
+        cornerRadius: effectiveCornerRadius,
+        shadow: effectiveShadow,
+        shadowSettings: effectiveShadowSettings,
+        cornerTexts: effectiveCornerTexts,
+        textSettings: effectiveTextSettings,
+        background: effectiveBackground,
+        format: effectiveFormat,
+        canvasSize: effectiveCanvasSize,
         showBackgroundOnly,
         showCanvas,
         handleImageUpload,
@@ -474,30 +630,42 @@ export default function AppLayout({
                       />
                     </>
                   )}
+                  {hasMultipleImages && (
+                    <div className="flex items-center gap-2">
+                      <Switch
+                        id="apply-to-all"
+                        checked={applyToAll}
+                        onCheckedChange={setApplyToAll}
+                      />
+                      <Label htmlFor="apply-to-all" className="text-sm cursor-pointer">
+                        Apply to All
+                      </Label>
+                    </div>
+                  )}
                 </div>
               </div>
 
               <HorizontalControls
-                format={selectedFormat}
-                padding={padding}
-                cornerRadius={cornerRadius}
-                shadow={shadow}
-                shadowSettings={shadowSettings}
-                cornerTexts={cornerTexts}
-                textSettings={textSettings}
-                canvasSize={canvasSize}
-                onFormatChange={setSelectedFormat}
-                onPaddingChange={setPadding}
-                onCornerRadiusChange={setCornerRadius}
-                onShadowChange={setShadow}
-                onShadowSettingsChange={setShadowSettings}
-                onCornerTextsChange={setCornerTexts}
-                onTextSettingsChange={setTextSettings}
-                onCanvasSizeChange={setCanvasSize}
+                format={effectiveFormat}
+                padding={[effectivePadding]}
+                cornerRadius={[effectiveCornerRadius]}
+                shadow={[effectiveShadow]}
+                shadowSettings={effectiveShadowSettings}
+                cornerTexts={effectiveCornerTexts}
+                textSettings={effectiveTextSettings}
+                canvasSize={[effectiveCanvasSize]}
+                onFormatChange={handleFormatChange}
+                onPaddingChange={handlePaddingChange}
+                onCornerRadiusChange={handleCornerRadiusChange}
+                onShadowChange={handleShadowChange}
+                onShadowSettingsChange={handleShadowSettingsChange}
+                onCornerTextsChange={handleCornerTextsChange}
+                onTextSettingsChange={handleTextSettingsChange}
+                onCanvasSizeChange={handleCanvasSizeChange}
               />
 
               <div className="px-4">
-                <HorizontalBackgroundSelector selected={selectedBackground} onSelect={setSelectedBackground} />
+                <HorizontalBackgroundSelector selected={effectiveBackground} onSelect={handleBackgroundChange} />
               </div>
             </div>
           </div>

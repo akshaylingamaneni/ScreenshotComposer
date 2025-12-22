@@ -29,6 +29,15 @@ export type ImageItem = {
   id: string
   src: string
   name: string
+  background?: string
+  padding?: number
+  cornerRadius?: number
+  shadow?: number
+  shadowSettings?: ShadowSettings
+  cornerTexts?: CornerTexts
+  textSettings?: TextSettings
+  format?: string
+  canvasSize?: number
 }
 
 export type ScreenshotShellContextValue = {
