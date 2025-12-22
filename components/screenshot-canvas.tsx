@@ -61,6 +61,7 @@ export function ScreenshotCanvas({
     const renderBackground = (size: CanvasSize) => {
       setupCanvas(canvas, ctx, size.width, size.height, pixelRatio)
       setImageDimensions(size)
+      // debugger;
       drawBackground(ctx, size.width, size.height, backgroundPattern)
     }
 
@@ -221,10 +222,8 @@ function drawBackground(
     ctx.fillRect(0, 0, width, height)
     return
   }
-
   const style = backgroundPattern.style
   const baseColor = inferBaseColor(style)
-
   ctx.fillStyle = baseColor
   ctx.fillRect(0, 0, width, height)
 
@@ -233,16 +232,20 @@ function drawBackground(
   if (gradientSource.includes("gradient")) {
     const bgSizeStr = style.backgroundSize as string | undefined
     const bgSizes = bgSizeStr ? parseBgSizes(bgSizeStr) : []
-
     const gradients = parseAllGradients(gradientSource, width, height, bgSizes)
-
     let sizeIndex = 0
     gradients.forEach((gradientInfo) => {
       ctx.save()
-      const currentSize = bgSizes[sizeIndex] || { width: 0, height: 0 }
+      let currentSize = { width: 0, height: 0 }
+      if (bgSizes.length == 1) {
+        currentSize = bgSizes[0] || { width: 0, height: 0 }
+      } else {
+        currentSize = bgSizes[sizeIndex] || { width: 0, height: 0 }
+      }
       sizeIndex++
-
       if (gradientInfo.type === "radial") {
+        const isEllipse = gradientInfo.rx !== undefined && gradientInfo.ry !== undefined
+
         if (currentSize.width > 0 && currentSize.height > 0) {
           const patternCanvas = document.createElement("canvas")
           patternCanvas.width = currentSize.width
@@ -250,17 +253,45 @@ function drawBackground(
           const patternCtx = patternCanvas.getContext("2d")
 
           if (patternCtx) {
-            const gradient = patternCtx.createRadialGradient(
-              gradientInfo.cx,
-              gradientInfo.cy,
-              0,
-              gradientInfo.cx,
-              gradientInfo.cy,
-              gradientInfo.radius,
-            )
-            applyGradientStops(gradient, gradientInfo.stops)
-            patternCtx.fillStyle = gradient
-            patternCtx.fillRect(0, 0, currentSize.width, currentSize.height)
+            if (isEllipse) {
+              const rx = gradientInfo.rx!
+              const ry = gradientInfo.ry!
+              const maxRadius = Math.max(rx, ry)
+              const scaleX = rx / maxRadius
+              const scaleY = ry / maxRadius
+
+              patternCtx.save()
+              patternCtx.translate(gradientInfo.cx, gradientInfo.cy)
+              patternCtx.scale(scaleX, scaleY)
+              patternCtx.translate(-gradientInfo.cx, -gradientInfo.cy)
+
+              const gradient = patternCtx.createRadialGradient(
+                gradientInfo.cx,
+                gradientInfo.cy,
+                0,
+                gradientInfo.cx,
+                gradientInfo.cy,
+                maxRadius,
+              )
+              applyGradientStops(gradient, gradientInfo.stops)
+              patternCtx.fillStyle = gradient
+              const fillWidth = currentSize.width / scaleX
+              const fillHeight = currentSize.height / scaleY
+              patternCtx.fillRect(-fillWidth, -fillHeight, fillWidth * 3, fillHeight * 3)
+              patternCtx.restore()
+            } else {
+              const gradient = patternCtx.createRadialGradient(
+                gradientInfo.cx,
+                gradientInfo.cy,
+                0,
+                gradientInfo.cx,
+                gradientInfo.cy,
+                gradientInfo.radius,
+              )
+              applyGradientStops(gradient, gradientInfo.stops)
+              patternCtx.fillStyle = gradient
+              patternCtx.fillRect(0, 0, currentSize.width, currentSize.height)
+            }
 
             const canvasPattern = ctx.createPattern(patternCanvas, "repeat")
             if (canvasPattern) {
@@ -269,27 +300,99 @@ function drawBackground(
             }
           }
         } else {
-          const gradient = ctx.createRadialGradient(
-            gradientInfo.cx,
-            gradientInfo.cy,
-            0,
-            gradientInfo.cx,
-            gradientInfo.cy,
-            gradientInfo.radius,
-          )
+          if (isEllipse) {
+            const rx = gradientInfo.rx!
+            const ry = gradientInfo.ry!
+            const maxRadius = Math.max(rx, ry)
+            const scaleX = rx / maxRadius
+            const scaleY = ry / maxRadius
+
+            ctx.save()
+            ctx.translate(gradientInfo.cx, gradientInfo.cy)
+            ctx.scale(scaleX, scaleY)
+            ctx.translate(-gradientInfo.cx, -gradientInfo.cy)
+
+            const gradient = ctx.createRadialGradient(
+              gradientInfo.cx,
+              gradientInfo.cy,
+              0,
+              gradientInfo.cx,
+              gradientInfo.cy,
+              maxRadius,
+            )
+            applyGradientStops(gradient, gradientInfo.stops)
+            ctx.fillStyle = gradient
+            const fillWidth = width / scaleX
+            const fillHeight = height / scaleY
+            ctx.fillRect(-fillWidth, -fillHeight, fillWidth * 3, fillHeight * 3)
+            ctx.restore()
+          } else {
+            const gradient = ctx.createRadialGradient(
+              gradientInfo.cx,
+              gradientInfo.cy,
+              0,
+              gradientInfo.cx,
+              gradientInfo.cy,
+              gradientInfo.radius,
+            )
+            applyGradientStops(gradient, gradientInfo.stops)
+            ctx.fillStyle = gradient
+            ctx.fillRect(0, 0, width, height)
+          }
+        }
+      } else if (gradientInfo.type === "linear") {
+        if (currentSize.width > 0 && currentSize.height > 0) {
+          const patternCanvas = document.createElement("canvas")
+          patternCanvas.width = currentSize.width
+          patternCanvas.height = currentSize.height
+          const patternCtx = patternCanvas.getContext("2d")
+
+          if (patternCtx) {
+            const dx = gradientInfo.x2 - gradientInfo.x1
+            const dy = gradientInfo.y2 - gradientInfo.y1
+            const fullCanvasAngleRad = Math.atan2(dy, dx)
+            const patternDiagonal = Math.sqrt(currentSize.width * currentSize.width + currentSize.height * currentSize.height)
+            const centerX = currentSize.width / 2
+            const centerY = currentSize.height / 2
+
+            const px1 = centerX - (Math.cos(fullCanvasAngleRad) * patternDiagonal) / 2
+            const py1 = centerY - (Math.sin(fullCanvasAngleRad) * patternDiagonal) / 2
+            const px2 = centerX + (Math.cos(fullCanvasAngleRad) * patternDiagonal) / 2
+            const py2 = centerY + (Math.sin(fullCanvasAngleRad) * patternDiagonal) / 2
+
+            const gradient = patternCtx.createLinearGradient(px1, py1, px2, py2)
+            applyGradientStops(gradient, gradientInfo.stops)
+            patternCtx.fillStyle = gradient
+            patternCtx.fillRect(0, 0, currentSize.width, currentSize.height)
+            const canvasPattern = ctx.createPattern(patternCanvas, "repeat")
+            if (canvasPattern) {
+              ctx.fillStyle = canvasPattern
+              ctx.fillRect(0, 0, width, height)
+            }
+          }
+        } else {
+          const dx = gradientInfo.x2 - gradientInfo.x1
+          const dy = gradientInfo.y2 - gradientInfo.y1
+          const fullCanvasAngleRad = Math.atan2(dy, dx)
+          const diagonal = Math.sqrt(width * width + height * height)
+          const centerX = width / 2
+          const centerY = height / 2
+
+          const px1 = centerX - (Math.cos(fullCanvasAngleRad) * diagonal) / 2
+          const py1 = centerY - (Math.sin(fullCanvasAngleRad) * diagonal) / 2
+          const px2 = centerX + (Math.cos(fullCanvasAngleRad) * diagonal) / 2
+          const py2 = centerY + (Math.sin(fullCanvasAngleRad) * diagonal) / 2
+          const gradient = ctx.createLinearGradient(px1, py1, px2, py2)
           applyGradientStops(gradient, gradientInfo.stops)
           ctx.fillStyle = gradient
           ctx.fillRect(0, 0, width, height)
         }
-      } else if (gradientInfo.type === "linear") {
-        const gradient = ctx.createLinearGradient(gradientInfo.x1, gradientInfo.y1, gradientInfo.x2, gradientInfo.y2)
-        applyGradientStops(gradient, gradientInfo.stops)
-        ctx.fillStyle = gradient
-        ctx.fillRect(0, 0, width, height)
       } else if (gradientInfo.type === "repeating-linear") {
+        const patternWidth = Math.max(1, Math.ceil(gradientInfo.sizeX))
+        const patternHeight = Math.max(1, Math.ceil(gradientInfo.sizeY))
         const patternCanvas = document.createElement("canvas")
-        patternCanvas.width = gradientInfo.sizeX
-        patternCanvas.height = gradientInfo.sizeY
+        patternCanvas.width = patternWidth
+        patternCanvas.height = patternHeight
         const patternCtx = patternCanvas.getContext("2d")
 
         if (patternCtx) {
@@ -301,7 +404,7 @@ function drawBackground(
           )
           applyGradientStops(gradient, gradientInfo.stops)
           patternCtx.fillStyle = gradient
-          patternCtx.fillRect(0, 0, gradientInfo.sizeX, gradientInfo.sizeY)
+          patternCtx.fillRect(0, 0, patternWidth, patternHeight)
 
           const canvasPattern = ctx.createPattern(patternCanvas, "repeat")
           if (canvasPattern) {
@@ -382,6 +485,7 @@ function drawBackground(
   const maskImage = resolveMaskSource(style)
   if (maskImage && maskImage.includes("gradient")) {
     const maskGradients = parseAllGradients(maskImage, width, height, [])
+    const maskComposite = (style.maskComposite as string) || (style.WebkitMaskComposite as string) || "intersect"
 
     if (maskGradients.length > 0) {
       const maskCanvas = document.createElement("canvas")
@@ -392,25 +496,81 @@ function drawBackground(
       if (maskCtx) {
         maskCtx.clearRect(0, 0, width, height)
 
-        maskGradients.forEach((gradientInfo) => {
-          if (gradientInfo.type === "radial") {
-            const gradient = maskCtx.createRadialGradient(
-              gradientInfo.cx,
-              gradientInfo.cy,
-              0,
-              gradientInfo.cx,
-              gradientInfo.cy,
-              gradientInfo.radius,
-            )
-            applyMaskStops(gradient, gradientInfo.stops)
-            maskCtx.fillStyle = gradient
-            maskCtx.fillRect(0, 0, width, height)
-          } else if (gradientInfo.type === "linear") {
-            const gradient = maskCtx.createLinearGradient(gradientInfo.x1, gradientInfo.y1, gradientInfo.x2, gradientInfo.y2)
-            applyMaskStops(gradient, gradientInfo.stops)
-            maskCtx.fillStyle = gradient
-            maskCtx.fillRect(0, 0, width, height)
+        maskGradients.forEach((gradientInfo, index) => {
+          if (index > 0 && (maskComposite === "intersect" || maskComposite === "source-in")) {
+            maskCtx.globalCompositeOperation = "destination-in"
+          } else if (index > 0) {
+            maskCtx.globalCompositeOperation = "source-over"
           }
+
+          if (gradientInfo.type === "radial") {
+            const isEllipse = gradientInfo.rx !== undefined && gradientInfo.ry !== undefined
+
+            if (isEllipse) {
+              const rx = gradientInfo.rx!
+              const ry = gradientInfo.ry!
+              const maxRadius = Math.max(rx, ry)
+              const scaleX = rx / maxRadius
+              const scaleY = ry / maxRadius
+
+              maskCtx.save()
+              maskCtx.translate(gradientInfo.cx, gradientInfo.cy)
+              maskCtx.scale(scaleX, scaleY)
+              maskCtx.translate(-gradientInfo.cx, -gradientInfo.cy)
+
+              const gradient = maskCtx.createRadialGradient(
+                gradientInfo.cx,
+                gradientInfo.cy,
+                0,
+                gradientInfo.cx,
+                gradientInfo.cy,
+                maxRadius,
+              )
+              applyMaskStops(gradient, gradientInfo.stops)
+              maskCtx.fillStyle = gradient
+              const fillWidth = width / scaleX
+              const fillHeight = height / scaleY
+              maskCtx.fillRect(-fillWidth, -fillHeight, fillWidth * 3, fillHeight * 3)
+              maskCtx.restore()
+            } else {
+              const gradient = maskCtx.createRadialGradient(
+                gradientInfo.cx,
+                gradientInfo.cy,
+                0,
+                gradientInfo.cx,
+                gradientInfo.cy,
+                gradientInfo.radius,
+              )
+              applyMaskStops(gradient, gradientInfo.stops)
+              maskCtx.fillStyle = gradient
+              maskCtx.fillRect(0, 0, width, height)
+            }
+          } else if (gradientInfo.type === "repeating-linear") {
+            const patternCanvas = document.createElement("canvas")
+            patternCanvas.width = Math.max(1, Math.ceil(gradientInfo.sizeX))
+            patternCanvas.height = Math.max(1, Math.ceil(gradientInfo.sizeY))
+            const patternCtx = patternCanvas.getContext("2d")
+
+            if (patternCtx) {
+              const gradient = patternCtx.createLinearGradient(
+                gradientInfo.x1,
+                gradientInfo.y1,
+                gradientInfo.x2,
+                gradientInfo.y2,
+              )
+              applyMaskStops(gradient, gradientInfo.stops)
+              patternCtx.fillStyle = gradient
+              patternCtx.fillRect(0, 0, patternCanvas.width, patternCanvas.height)
+
+              const canvasPattern = maskCtx.createPattern(patternCanvas, "repeat")
+              if (canvasPattern) {
+                maskCtx.fillStyle = canvasPattern
+                maskCtx.fillRect(0, 0, width, height)
+              }
+            }
+          }
+
+          maskCtx.globalCompositeOperation = "source-over"
         })
 
         ctx.save()
@@ -453,6 +613,7 @@ function inferBaseColor(style: CSSProperties): string {
 }
 
 function resolveGradientSource(style: CSSProperties): string {
+  // debugger;
   const bgImage =
     typeof style.backgroundImage === "string" && style.backgroundImage !== "none" ? style.backgroundImage : ""
   const background = typeof style.background === "string" ? style.background : ""
@@ -591,6 +752,8 @@ interface RadialGradientInfo {
   cx: number
   cy: number
   radius: number
+  rx?: number
+  ry?: number
   stops: GradientStop[]
 }
 
@@ -648,6 +811,11 @@ function parseAllGradients(
   const results: GradientInfo[] = []
   const normalized = normalizeBackgroundString(bgImage)
 
+  const REP_RAD = "repeating-radial-gradient("
+  const REP_LIN = "repeating-linear-gradient("
+  const RAD = "radial-gradient("
+  const LIN = "linear-gradient("
+
   const gradientMatches: string[] = []
   let i = 0
   while (i < normalized.length) {
@@ -655,22 +823,22 @@ function parseAllGradients(
 
     let gradientStart = -1
     let gradientType = ""
-    if (remaining.startsWith("repeating-radial-gradient(")) {
+    if (remaining.startsWith(REP_RAD)) {
       gradientStart = i
       gradientType = "repeating-radial"
-      i += 28
-    } else if (remaining.startsWith("repeating-linear-gradient(")) {
+      i += REP_RAD.length
+    } else if (remaining.startsWith(REP_LIN)) {
       gradientStart = i
       gradientType = "repeating-linear"
-      i += 28
-    } else if (remaining.startsWith("radial-gradient(")) {
+      i += REP_LIN.length
+    } else if (remaining.startsWith(RAD)) {
       gradientStart = i
       gradientType = "radial"
-      i += 16
-    } else if (remaining.startsWith("linear-gradient(")) {
+      i += RAD.length
+    } else if (remaining.startsWith(LIN)) {
       gradientStart = i
       gradientType = "linear"
-      i += 16
+      i += LIN.length
     } else {
       i++
       continue
@@ -700,9 +868,9 @@ function parseAllGradients(
   for (const gradientStr of gradientMatches) {
     const currentSize = bgSizes[sizeIndex] || { width: 0, height: 0 }
     sizeIndex++
-
-    if (gradientStr.startsWith("repeating-radial-gradient(")) {
-      const content = gradientStr.slice(28, -1).trim()
+    // debugger;
+    if (gradientStr.startsWith(REP_RAD)) {
+      const content = gradientStr.slice(REP_RAD.length, -1).trim()
 
       let cx = 0
       let cy = 0
@@ -780,11 +948,11 @@ function parseAllGradients(
           sizeY: currentSize.height || 40,
         })
       }
-    } else if (gradientStr.startsWith("repeating-linear-gradient(")) {
-      const content = gradientStr.slice(28, -1).trim()
+    } else if (gradientStr.startsWith(REP_LIN)) {
+      const content = gradientStr.slice(REP_LIN.length, -1).trim()
 
       let angle = 0
-      const angleMatch = content.match(/([\d.]+)deg/)
+      const angleMatch = content.match(/(-?[\d.]+)deg/)
       if (angleMatch) {
         angle = Number.parseFloat(angleMatch[1])
       } else if (content.includes("to right")) {
@@ -797,20 +965,7 @@ function parseAllGradients(
         angle = 0
       }
 
-      const sizeX = currentSize.width || 40
-      const sizeY = currentSize.height || 40
-      const diagonal = Math.sqrt(sizeX * sizeX + sizeY * sizeY)
-      const centerX = sizeX / 2
-      const centerY = sizeY / 2
-
-      const angleRad = (angle - 90) * (Math.PI / 180)
-      const x1 = centerX - (Math.cos(angleRad) * diagonal) / 2
-      const y1 = centerY - (Math.sin(angleRad) * diagonal) / 2
-      const x2 = centerX + (Math.cos(angleRad) * diagonal) / 2
-      const y2 = centerY + (Math.sin(angleRad) * diagonal) / 2
-
-      const colorStops: GradientStop[] = []
-      const colorRegex = /(#[a-fA-F0-9]{3,8}|rgba?\([^)]+\)|transparent)\s*(([\d.]+)(%|px)?)?/g
+      const colorRegex = /(#[a-fA-F0-9]{3,8}|rgba?\([^)]+\)|transparent|black|white)\s*(([\d.]+)(px|%)?)?/g
       let colorMatch
       const colors: { color: string; value?: number; unit?: string }[] = []
 
@@ -819,29 +974,109 @@ function parseAllGradients(
         if (color.startsWith("rgba") || color.startsWith("rgb")) {
           color = color.replace(/\s+/g, "")
         }
+        if (color === "black") color = "#000000"
+        if (color === "white") color = "#ffffff"
         const value = colorMatch[3] ? Number.parseFloat(colorMatch[3]) : undefined
         const unit = colorMatch[4] || undefined
-        colors.push({
-          color,
-          value,
-          unit,
-        })
+        colors.push({ color, value, unit })
       }
 
-      colors.forEach((c, i) => {
-        let offset: number
-        if (c.value !== undefined) {
-          if (c.unit === "px") {
-            const maxSize = Math.max(sizeX, sizeY)
-            offset = c.value / maxSize
-          } else {
-            offset = c.value / 100
-          }
-        } else {
-          offset = i / Math.max(colors.length - 1, 1)
+      let repeatSize = 0
+      colors.forEach((c) => {
+        if (c.value !== undefined && c.unit === "px" && c.value > repeatSize) {
+          repeatSize = c.value
         }
-        colorStops.push({ offset: Math.min(1, Math.max(0, offset)), color: c.color })
       })
+      if (repeatSize === 0) repeatSize = 8
+
+      const isHorizontal = angle === 90 || angle === 270
+      const isVertical = angle === 0 || angle === 180
+      let sizeX: number, sizeY: number, x1: number, y1: number, x2: number, y2: number
+      let gradientLength: number
+
+      const hasBgSize = currentSize.width > 0 && currentSize.height > 0
+
+      if (hasBgSize) {
+        sizeX = currentSize.width
+        sizeY = currentSize.height
+        const angleRad = (angle - 90) * (Math.PI / 180)
+        const centerX = sizeX / 2
+        const centerY = sizeY / 2
+        const diagonal = Math.sqrt(sizeX * sizeX + sizeY * sizeY)
+        x1 = centerX - (Math.cos(angleRad) * diagonal) / 2
+        y1 = centerY - (Math.sin(angleRad) * diagonal) / 2
+        x2 = centerX + (Math.cos(angleRad) * diagonal) / 2
+        y2 = centerY + (Math.sin(angleRad) * diagonal) / 2
+        gradientLength = diagonal
+      } else if (isHorizontal) {
+        sizeX = repeatSize
+        sizeY = 1
+        x1 = 0
+        y1 = 0
+        x2 = repeatSize
+        y2 = 0
+        gradientLength = repeatSize
+      } else if (isVertical) {
+        sizeX = 1
+        sizeY = repeatSize
+        x1 = 0
+        y1 = 0
+        x2 = 0
+        y2 = repeatSize
+        gradientLength = repeatSize
+      } else {
+        const angleRad = (angle - 90) * (Math.PI / 180)
+        const cosVal = Math.abs(Math.cos(angleRad))
+        const sinVal = Math.abs(Math.sin(angleRad))
+
+        let tileWidth: number, tileHeight: number
+        if (cosVal < 0.001) {
+          tileWidth = repeatSize
+          tileHeight = repeatSize / sinVal
+        } else if (sinVal < 0.001) {
+          tileWidth = repeatSize / cosVal
+          tileHeight = repeatSize
+        } else {
+          tileWidth = repeatSize / cosVal
+          tileHeight = repeatSize / sinVal
+        }
+
+        tileWidth = Math.max(1, Math.ceil(tileWidth))
+        tileHeight = Math.max(1, Math.ceil(tileHeight))
+
+        sizeX = tileWidth
+        sizeY = tileHeight
+        const centerX = tileWidth / 2
+        const centerY = tileHeight / 2
+        const diagonal = Math.sqrt(tileWidth * tileWidth + tileHeight * tileHeight)
+        x1 = centerX - (Math.cos(angleRad) * diagonal) / 2
+        y1 = centerY - (Math.sin(angleRad) * diagonal) / 2
+        x2 = centerX + (Math.cos(angleRad) * diagonal) / 2
+        y2 = centerY + (Math.sin(angleRad) * diagonal) / 2
+        gradientLength = diagonal
+      }
+
+      const colorStops: GradientStop[] = []
+      const numRepeats = Math.ceil(gradientLength / repeatSize)
+
+      for (let rep = 0; rep < numRepeats; rep++) {
+        colors.forEach((c, i) => {
+          let baseOffset: number
+          if (c.value !== undefined) {
+            if (c.unit === "px") {
+              baseOffset = c.value / repeatSize
+            } else {
+              baseOffset = c.value / 100
+            }
+          } else {
+            baseOffset = i / Math.max(colors.length - 1, 1)
+          }
+          const offset = (rep + baseOffset) / numRepeats
+          if (offset >= 0 && offset <= 1) {
+            colorStops.push({ offset, color: c.color })
+          }
+        })
+      }
 
       if (colorStops.length > 0) {
         results.push({
@@ -855,8 +1090,8 @@ function parseAllGradients(
           sizeY,
         })
       }
-    } else if (gradientStr.startsWith("radial-gradient(")) {
-      const content = gradientStr.slice(16, -1).trim()
+    } else if (gradientStr.startsWith(RAD)) {
+      const content = gradientStr.slice(RAD.length, -1).trim()
 
       const patternWidth = currentSize.width > 0 ? currentSize.width : width
       const patternHeight = currentSize.height > 0 ? currentSize.height : height
@@ -864,50 +1099,73 @@ function parseAllGradients(
       let cx = patternWidth / 2
       let cy = patternHeight / 2
       let radiusPercent = 100
+      let rxPercent: number | undefined
+      let ryPercent: number | undefined
 
-      const circlePxMatch = content.match(/circle\s+([\d.]+)px/)
-      const circleAtMatch = content.match(/circle\s+([\d.]+)px\s+at\s+([\d.]+)%\s+([\d.]+)%/)
-      const circleAtPxMatch = content.match(/circle\s+([\d.]+)px\s+at\s+([\d.]+)px\s+([\d.]+)px/)
-      const circleAtPxOnlyMatch = content.match(/circle\s+at\s+([\d.]+)px\s+([\d.]+)px/)
-      const circleAtPercentMatch = content.match(/circle\s+at\s+([\d.]+)%\s+([\d.]+)%/)
+      const ellipseMatch = content.match(/ellipse\s+([\d.]+)%\s+([\d.]+)%/)
+      const ellipseAtMatch = content.match(/ellipse\s+([\d.]+)%\s+([\d.]+)%\s+at\s+([\d.]+)%\s+([\d.]+)%/)
 
-      if (circleAtPxMatch) {
-        const pxSize = Number.parseFloat(circleAtPxMatch[1])
-        cx = Number.parseFloat(circleAtPxMatch[2])
-        cy = Number.parseFloat(circleAtPxMatch[3])
-        radiusPercent = (pxSize / Math.max(width, height)) * 100
-      } else if (circleAtMatch) {
-        const pxSize = Number.parseFloat(circleAtMatch[1])
-        cx = (Number.parseFloat(circleAtMatch[2]) / 100) * width
-        cy = (Number.parseFloat(circleAtMatch[3]) / 100) * height
-        radiusPercent = (pxSize / Math.max(width, height)) * 100
-      } else if (circleAtPxOnlyMatch) {
-        cx = Number.parseFloat(circleAtPxOnlyMatch[1])
-        cy = Number.parseFloat(circleAtPxOnlyMatch[2])
-        radiusPercent = 100
-      } else if (circleAtPercentMatch) {
-        cx = (Number.parseFloat(circleAtPercentMatch[1]) / 100) * patternWidth
-        cy = (Number.parseFloat(circleAtPercentMatch[2]) / 100) * patternHeight
-        radiusPercent = 100
-      } else if (circlePxMatch) {
-        const pxSize = Number.parseFloat(circlePxMatch[1])
-        radiusPercent = (pxSize / Math.max(patternWidth, patternHeight)) * 100
-      } else {
+      if (ellipseAtMatch) {
+        rxPercent = Number.parseFloat(ellipseAtMatch[1])
+        ryPercent = Number.parseFloat(ellipseAtMatch[2])
+        cx = (Number.parseFloat(ellipseAtMatch[3]) / 100) * patternWidth
+        cy = (Number.parseFloat(ellipseAtMatch[4]) / 100) * patternHeight
+        radiusPercent = Math.max(rxPercent, ryPercent)
+      } else if (ellipseMatch) {
+        rxPercent = Number.parseFloat(ellipseMatch[1])
+        ryPercent = Number.parseFloat(ellipseMatch[2])
+        radiusPercent = Math.max(rxPercent, ryPercent)
+
         const atMatch = content.match(/at\s+([\d.]+)%\s+([\d.]+)%/)
         if (atMatch) {
           cx = (Number.parseFloat(atMatch[1]) / 100) * patternWidth
           cy = (Number.parseFloat(atMatch[2]) / 100) * patternHeight
         }
+      } else {
+        const circlePxMatch = content.match(/circle\s+([\d.]+)px/)
+        const circleAtMatch = content.match(/circle\s+([\d.]+)px\s+at\s+([\d.]+)%\s+([\d.]+)%/)
+        const circleAtPxMatch = content.match(/circle\s+([\d.]+)px\s+at\s+([\d.]+)px\s+([\d.]+)px/)
+        const circleAtPxOnlyMatch = content.match(/circle\s+at\s+([\d.]+)px\s+([\d.]+)px/)
+        const circleAtPercentMatch = content.match(/circle\s+at\s+([\d.]+)%\s+([\d.]+)%/)
 
-        const atPxMatch = content.match(/at\s+([\d.]+)px\s+([\d.]+)px/)
-        if (atPxMatch) {
-          cx = Number.parseFloat(atPxMatch[1])
-          cy = Number.parseFloat(atPxMatch[2])
-        }
+        if (circleAtPxMatch) {
+          const pxSize = Number.parseFloat(circleAtPxMatch[1])
+          cx = Number.parseFloat(circleAtPxMatch[2])
+          cy = Number.parseFloat(circleAtPxMatch[3])
+          radiusPercent = (pxSize / Math.max(width, height)) * 100
+        } else if (circleAtMatch) {
+          const pxSize = Number.parseFloat(circleAtMatch[1])
+          cx = (Number.parseFloat(circleAtMatch[2]) / 100) * width
+          cy = (Number.parseFloat(circleAtMatch[3]) / 100) * height
+          radiusPercent = (pxSize / Math.max(width, height)) * 100
+        } else if (circleAtPxOnlyMatch) {
+          cx = Number.parseFloat(circleAtPxOnlyMatch[1])
+          cy = Number.parseFloat(circleAtPxOnlyMatch[2])
+          radiusPercent = 100
+        } else if (circleAtPercentMatch) {
+          cx = (Number.parseFloat(circleAtPercentMatch[1]) / 100) * patternWidth
+          cy = (Number.parseFloat(circleAtPercentMatch[2]) / 100) * patternHeight
+          radiusPercent = 100
+        } else if (circlePxMatch) {
+          const pxSize = Number.parseFloat(circlePxMatch[1])
+          radiusPercent = (pxSize / Math.max(patternWidth, patternHeight)) * 100
+        } else {
+          const atMatch = content.match(/at\s+([\d.]+)%\s+([\d.]+)%/)
+          if (atMatch) {
+            cx = (Number.parseFloat(atMatch[1]) / 100) * patternWidth
+            cy = (Number.parseFloat(atMatch[2]) / 100) * patternHeight
+          }
 
-        const sizeMatch = content.match(/([\d.]+)%\s+([\d.]+)%/)
-        if (sizeMatch) {
-          radiusPercent = Math.max(Number.parseFloat(sizeMatch[1]), Number.parseFloat(sizeMatch[2]))
+          const atPxMatch = content.match(/at\s+([\d.]+)px\s+([\d.]+)px/)
+          if (atPxMatch) {
+            cx = Number.parseFloat(atPxMatch[1])
+            cy = Number.parseFloat(atPxMatch[2])
+          }
+
+          const sizeMatch = content.match(/([\d.]+)%\s+([\d.]+)%/)
+          if (sizeMatch) {
+            radiusPercent = Math.max(Number.parseFloat(sizeMatch[1]), Number.parseFloat(sizeMatch[2]))
+          }
         }
       }
 
@@ -946,16 +1204,21 @@ function parseAllGradients(
       })
 
       if (colorStops.length > 0) {
-        results.push({
+        const gradientInfo: RadialGradientInfo = {
           type: "radial",
           cx,
           cy,
           radius: (radiusPercent / 100) * Math.max(patternWidth, patternHeight),
           stops: colorStops,
-        })
+        }
+        if (rxPercent !== undefined && ryPercent !== undefined) {
+          gradientInfo.rx = (rxPercent / 100) * patternWidth
+          gradientInfo.ry = (ryPercent / 100) * patternHeight
+        }
+        results.push(gradientInfo)
       }
-    } else if (gradientStr.startsWith("linear-gradient(")) {
-      const content = gradientStr.slice(16, -1)
+    } else if (gradientStr.startsWith(LIN)) {
+      const content = gradientStr.slice(LIN.length, -1)
 
       if (content.includes("1px")) {
         const colorMatch = content.match(/(#[a-fA-F0-9]+|rgba?\([^)]+\))\s+1px/)
@@ -987,7 +1250,7 @@ function parseAllGradients(
 
       // Regular linear gradient
       let angle = 180
-      const angleMatch = content.match(/([\d.]+)deg/)
+      const angleMatch = content.match(/(-?[\d.]+)deg/)
       if (angleMatch) {
         angle = Number.parseFloat(angleMatch[1])
       } else if (content.includes("to right")) {

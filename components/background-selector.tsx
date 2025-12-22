@@ -41,7 +41,9 @@ export function BackgroundSelector({ selected, onSelect }: BackgroundSelectorPro
     if (style.background) clean.background = style.background
     if (style.backgroundImage) clean.backgroundImage = style.backgroundImage
     if (style.backgroundColor) clean.backgroundColor = style.backgroundColor
-    // Intentionally skip backgroundSize to avoid React warnings in swatches
+    if (style.backgroundSize) clean.backgroundSize = style.backgroundSize
+    if (style.WebkitMaskImage) clean.WebkitMaskImage = style.WebkitMaskImage
+    if (style.maskImage) clean.maskImage = style.maskImage
     return clean
   }
 

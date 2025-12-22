@@ -1172,34 +1172,7 @@ export const gridPatterns: Pattern[] = [
      {/* Your Content/Components */}
 </div>`,
   },
-  // diagona; cross diagonal
-  {
-    id: "diagonal-cross-grid",
-    name: "Diagonal Cross Grid",
-    category: "geometric",
-    style: {
-      background: "white",
-      backgroundImage: `
-      linear-gradient(45deg, transparent 49%, #e5e7eb 49%, #e5e7eb 51%, transparent 51%),
-      linear-gradient(-45deg, transparent 49%, #e5e7eb 49%, #e5e7eb 51%, transparent 51%)
-    `,
-      backgroundSize: "40px 40px",
-    },
-    code: `<div className="min-h-screen w-full bg-white relative">
-  {/*  Diagonal Cross Grid Background */}
-  <div
-    className="absolute inset-0"
-    style={{
-      backgroundImage: \`
-        linear-gradient(45deg, transparent 49%, #e5e7eb 49%, #e5e7eb 51%, transparent 51%),
-        linear-gradient(-45deg, transparent 49%, #e5e7eb 49%, #e5e7eb 51%, transparent 51%)
-      \`,
-      backgroundSize: "40px 40px",
-    }}
-  />
-  {/* Your Content/Components */}
-</div>`,
-  },
+ 
   {
     id: "diagonal-cross-grid-top",
     name: "Diagonal Cross Grid Top",
@@ -2461,62 +2434,6 @@ export const gridPatterns: Pattern[] = [
      {/* Your Content/Components */}
 </div>`,
   },
-  {
-    id: "aurora-waves",
-    name: "Aurora Waves",
-    category: "gradients",
-    badge: "New",
-    description: "Dynamic aurora borealis inspired wave pattern",
-    style: {
-      background: `linear-gradient(45deg, #1a1a1a 0%, #003366 100%),
-        repeating-linear-gradient(
-          45deg,
-          rgba(0, 255, 255, 0.1) 0px,
-          rgba(0, 255, 255, 0.1) 20px,
-          rgba(0, 255, 0, 0.1) 20px,
-          rgba(0, 255, 0, 0.1) 40px
-        ),
-        radial-gradient(
-          circle at 50% 50%,
-          rgba(32, 196, 232, 0.3) 0%,
-          rgba(76, 201, 240, 0.1) 100%
-        )`,
-      backgroundBlendMode: "normal, overlay, overlay",
-      animation: "aurora 8s linear infinite",
-    },
-    code: `<div className="min-h-screen w-full relative">
-  {/* Aurora Waves Pattern */}
-  <style>{\`
-    @keyframes aurora {
-      0% { transform: scale(1) rotate(0deg); opacity: 0.5; }
-      50% { transform: scale(1.2) rotate(180deg); opacity: 0.8; }
-      100% { transform: scale(1) rotate(360deg); opacity: 0.5; }
-    }
-  \`}</style>
-  <div
-    className="absolute inset-0 z-0"
-    style={{
-      background: \`linear-gradient(45deg, #1a1a1a 0%, #003366 100%),
-        repeating-linear-gradient(
-          45deg,
-          rgba(0, 255, 255, 0.1) 0px,
-          rgba(0, 255, 255, 0.1) 20px,
-          rgba(0, 255, 0, 0.1) 20px,
-          rgba(0, 255, 0, 0.1) 40px
-        ),
-        radial-gradient(
-          circle at 50% 50%,
-          rgba(32, 196, 232, 0.3) 0%,
-          rgba(76, 201, 240, 0.1) 100%
-        )\`,
-      backgroundBlendMode: "normal, overlay, overlay",
-      animation: "aurora 8s linear infinite",
-    }}
-  />
-  {/* Your Content/Components */}
-</div>`,
-  },
-
   // Warm Backgrounds
   {
     id: "aurora-dream-corner-whispers",
@@ -2545,105 +2462,6 @@ export const gridPatterns: Pattern[] = [
             radial-gradient(ellipse 70% 60% at 15% 80%, rgba(255, 100, 180, 0.40), transparent 62%),
             radial-gradient(ellipse 70% 60% at 92% 92%, rgba(120, 190, 255, 0.45), transparent 62%),
             linear-gradient(180deg, #f7eaff 0%, #fde2ea 100%)
-      \`,
-    }}
-  />
-  {/* Your content goes here */}
-</div>`,
-  },
-  {
-    id: "aurora-dream-soft-harmony",
-    name: "Aurora Dream Soft Harmony",
-    category: "effects",
-    badge: "New",
-    style: {
-      background: "#f7eaff",
-      backgroundImage: `
-      radial-gradient(ellipse 80% 60% at 60% 20%, rgba(175, 109, 255, 0.50), transparent 65%),
-        radial-gradient(ellipse 70% 60% at 20% 80%, rgba(255, 100, 180, 0.45), transparent 65%),
-        radial-gradient(ellipse 60% 50% at 60% 65%, rgba(255, 235, 170, 0.43), transparent 62%),
-        radial-gradient(ellipse 65% 40% at 50% 60%, rgba(120, 190, 255, 0.48), transparent 68%),
-        linear-gradient(180deg, #f7eaff 0%, #fde2ea 100%)
-    `,
-      backgroundSize: "100% 100%",
-    },
-    code: `<div className="min-h-screen w-full relative">
-  {/* Aurora Dream Soft Harmony */}
-  <div
-    className="absolute inset-0 z-0"
-    style={{
-      background: \`
-       radial-gradient(ellipse 80% 60% at 60% 20%, rgba(175, 109, 255, 0.50), transparent 65%),
-        radial-gradient(ellipse 70% 60% at 20% 80%, rgba(255, 100, 180, 0.45), transparent 65%),
-        radial-gradient(ellipse 60% 50% at 60% 65%, rgba(255, 235, 170, 0.43), transparent 62%),
-        radial-gradient(ellipse 65% 40% at 50% 60%, rgba(120, 190, 255, 0.48), transparent 68%),
-        linear-gradient(180deg, #f7eaff 0%, #fde2ea 100%)
-      \`,
-    }}
-  />
-  {/* Your content goes here */}
-</div>`,
-  },
-  {
-    id: "aurora-dream-diagonal-flow",
-    name: "Aurora Dream Diagonal Flow",
-    category: "effects",
-    badge: "New",
-    style: {
-      background: "#f7eaff",
-      backgroundImage: `
-       radial-gradient(ellipse 80% 60% at 5% 40%, rgba(175, 109, 255, 0.48), transparent 67%),
-        radial-gradient(ellipse 70% 60% at 45% 45%, rgba(255, 100, 180, 0.41), transparent 67%),
-        radial-gradient(ellipse 62% 52% at 83% 76%, rgba(255, 235, 170, 0.44), transparent 63%),
-        radial-gradient(ellipse 60% 48% at 75% 20%, rgba(120, 190, 255, 0.36), transparent 66%),
-        linear-gradient(45deg, #f7eaff 0%, #fde2ea 100%)
-    `,
-      backgroundSize: "100% 100%",
-    },
-    code: `<div className="min-h-screen w-full relative">
-  {/* Aurora Dream Diagonal Flow */}
-  <div
-    className="absolute inset-0 z-0"
-    style={{
-      background: \`
-         radial-gradient(ellipse 80% 60% at 5% 40%, rgba(175, 109, 255, 0.48), transparent 67%),
-        radial-gradient(ellipse 70% 60% at 45% 45%, rgba(255, 100, 180, 0.41), transparent 67%),
-        radial-gradient(ellipse 62% 52% at 83% 76%, rgba(255, 235, 170, 0.44), transparent 63%),
-        radial-gradient(ellipse 60% 48% at 75% 20%, rgba(120, 190, 255, 0.36), transparent 66%),
-        linear-gradient(45deg, #f7eaff 0%, #fde2ea 100%)
-      \`,
-    }}
-  />
-  {/* Your content goes here */}
-</div>`,
-  },
-  {
-    id: "aurora-dream-vivid-bloom",
-    name: "Aurora Dream Vivid Bloom",
-    category: "effects",
-    badge: "New",
-    style: {
-      background: "#f7eaff",
-      backgroundImage: `
-      radial-gradient(ellipse 80% 60% at 70% 20%, rgba(175, 109, 255, 0.85), transparent 68%),
-      radial-gradient(ellipse 70% 60% at 20% 80%, rgba(255, 100, 180, 0.75), transparent 68%),
-      radial-gradient(ellipse 60% 50% at 60% 65%, rgba(255, 235, 170, 0.98), transparent 68%),
-      radial-gradient(ellipse 65% 40% at 50% 60%, rgba(120, 190, 255, 0.3), transparent 68%),
-      linear-gradient(180deg, #f7eaff 0%, #fde2ea 100%)
-    `,
-      backgroundSize: "100% 100%",
-    },
-    code: `<div className="min-h-screen w-full relative">
-  {/* Aurora Dream Vivid Bloom */}
-  <div
-    className="absolute inset-0 z-0"
-    style={{
-      background: \`
-        radial-gradient(ellipse 80% 60% at 70% 20%, rgba(175, 109, 255, 0.85), transparent 68%),
-        radial-gradient(ellipse 70% 60% at 20% 80%, rgba(255, 100, 180, 0.75), transparent 68%),
-        radial-gradient(ellipse 60% 50% at 60% 65%, rgba(255, 235, 170, 0.98), transparent 68%),
-        radial-gradient(ellipse 65% 40% at 50% 60%, rgba(120, 190, 255, 0.3), transparent 68%),
-        linear-gradient(180deg, #f7eaff 0%, #fde2ea 100%)
       \`,
     }}
   />
@@ -4051,36 +3869,6 @@ export const gridPatterns: Pattern[] = [
   </div>`,
   },
   {
-    id: "zigzag-lightning-light",
-    name: "Zigzag Lightning - Light",
-    category: "geometric",
-    badge: "New",
-    style: {
-      background: "#ffffff",
-      backgroundImage: `
-      repeating-linear-gradient(0deg, transparent, transparent 20px, rgba(75, 85, 99, 0.08) 20px, rgba(75, 85, 99, 0.08) 21px),
-      repeating-linear-gradient(90deg, transparent, transparent 30px, rgba(107, 114, 128, 0.06) 30px, rgba(107, 114, 128, 0.06) 31px),
-      repeating-linear-gradient(60deg, transparent, transparent 40px, rgba(55, 65, 81, 0.05) 40px, rgba(55, 65, 81, 0.05) 41px),
-      repeating-linear-gradient(150deg, transparent, transparent 35px, rgba(31, 41, 55, 0.04) 35px, rgba(31, 41, 55, 0.04) 36px)
-    `,
-    },
-    code: `<div className="min-h-screen w-full bg-white relative text-gray-800">
-  {/* Zigzag Lightning - Light Pattern */}
-  <div
-    className="absolute inset-0 z-0 pointer-events-none"
-    style={{
-      backgroundImage: \`
-        repeating-linear-gradient(0deg, transparent, transparent 20px, rgba(75, 85, 99, 0.08) 20px, rgba(75, 85, 99, 0.08) 21px),
-        repeating-linear-gradient(90deg, transparent, transparent 30px, rgba(107, 114, 128, 0.06) 30px, rgba(107, 114, 128, 0.06) 31px),
-        repeating-linear-gradient(60deg, transparent, transparent 40px, rgba(55, 65, 81, 0.05) 40px, rgba(55, 65, 81, 0.05) 41px),
-        repeating-linear-gradient(150deg, transparent, transparent 35px, rgba(31, 41, 55, 0.04) 35px, rgba(31, 41, 55, 0.04) 36px)
-      \`,
-    }}
-  />
-  {/* Your Content/Components */}
-</div>`,
-  },
-  {
     id: "circuit-board-light",
     name: "Circuit Board - Light",
     category: "geometric",
@@ -4255,38 +4043,6 @@ export const gridPatterns: Pattern[] = [
       background: "#ffffff",
       backgroundImage: "radial-gradient(circle at 1px 1px, rgba(0, 0, 0, 0.35) 1px, transparent 0)",
       backgroundSize: "20px 20px",
-    }}
-  />
-     {/* Your Content/Components */}
-</div>`,
-  },
-  {
-    id: "circuit-board",
-    name: "Circuit Board",
-    category: "geometric",
-    style: {
-      background: "#f8fafc",
-      backgroundImage: `
-        linear-gradient(90deg, #e2e8f0 1px, transparent 1px),
-        linear-gradient(180deg, #e2e8f0 1px, transparent 1px),
-        linear-gradient(90deg, #cbd5e1 1px, transparent 1px),
-        linear-gradient(180deg, #cbd5e1 1px, transparent 1px)
-      `,
-      backgroundSize: "50px 50px, 50px 50px, 10px 10px, 10px 10px",
-    },
-    code: `<div className="min-h-screen w-full bg-[#f8fafc] relative">
-  {/* Circuit Board Background */}
-  <div
-    className="absolute inset-0 z-0"
-    style={{
-      background: "#f8fafc",
-      backgroundImage: \`
-        linear-gradient(90deg, #e2e8f0 1px, transparent 1px),
-        linear-gradient(180deg, #e2e8f0 1px, transparent 1px),
-        linear-gradient(90deg, #cbd5e1 1px, transparent 1px),
-        linear-gradient(180deg, #cbd5e1 1px, transparent 1px)
-      \`,
-      backgroundSize: "50px 50px, 50px 50px, 10px 10px, 10px 10px",
     }}
   />
      {/* Your Content/Components */}
@@ -4849,40 +4605,6 @@ export const gridPatterns: Pattern[] = [
       \`,
       backgroundSize: "30px 30px",
       backgroundPosition: "0 0",
-    }}
-  />
-     {/* Your Content/Components */}
-</div>`,
-  },
-
-  {
-    id: "dark-noise-colored-high",
-    name: "Dark Noise Colored",
-    category: "geometric",
-    badge: "New",
-    style: {
-      background: "#000000",
-      backgroundImage: `
-      radial-gradient(circle at 1px 1px, rgba(139, 92, 246, 0.2) 1px, transparent 0),
-      radial-gradient(circle at 1px 1px, rgba(59, 130, 246, 0.18) 1px, transparent 0),
-      radial-gradient(circle at 1px 1px, rgba(236, 72, 153, 0.15) 1px, transparent 0)
-    `,
-      backgroundSize: "20px 20px, 30px 30px, 25px 25px",
-      backgroundPosition: "0 0, 10px 10px, 15px 5px",
-    },
-    code: `<div className="min-h-screen w-full bg-black relative">
-  {/* Dark Noise Colored Background */}
-  <div
-    className="absolute inset-0 z-0"
-    style={{
-      background: "#000000",
-      backgroundImage: \`
-        radial-gradient(circle at 1px 1px, rgba(139, 92, 246, 0.2) 1px, transparent 0),
-        radial-gradient(circle at 1px 1px, rgba(59, 130, 246, 0.18) 1px, transparent 0),
-        radial-gradient(circle at 1px 1px, rgba(236, 72, 153, 0.15) 1px, transparent 0)
-      \`,
-      backgroundSize: "20px 20px, 30px 30px, 25px 25px",
-      backgroundPosition: "0 0, 10px 10px, 15px 5px",
     }}
   />
      {/* Your Content/Components */}
@@ -7597,39 +7319,6 @@ export const gridPatterns: Pattern[] = [
    }}
  />
  {/* Your Content/Components */}
-</div>`,
-  },
-  {
-    id: "diagonal-striped-grid",
-    name: "Diagonal Striped Grid",
-    category: "geometric",
-    badge: "New",
-    style: {
-      background: "#ffffff",
-      backgroundImage: `
-        linear-gradient(90deg, rgba(16,185,129,0.25) 1px, transparent 0),
-        linear-gradient(180deg, rgba(16,185,129,0.25) 1px, transparent 0),
-        repeating-linear-gradient(45deg, rgba(16,185,129,0.2) 0 2px, transparent 2px 6px)
-      `,
-      backgroundSize: "24px 24px, 24px 24px, 24px 24px",
-    },
-    code: `<div className="min-h-screen w-full bg-white relative grid-animated-container">
-  {/* Diagonal Striped Grid Spotlight Background */}
-  <div
-    className="absolute inset-0 z-0"
-    style={{
-      backgroundImage: \`
-        linear-gradient(90deg, rgba(16,185,129,0.25) 1px, transparent 0),
-        linear-gradient(180deg, rgba(16,185,129,0.25) 1px, transparent 0),
-        repeating-linear-gradient(45deg, rgba(16,185,129,0.2) 0 2px, transparent 2px 6px)
-      \`,
-      backgroundSize: "24px 24px, 24px 24px, 24px 24px",
-      WebkitMask: "radial-gradient(circle at var(--x, 50%) var(--y, 50%), black 0, transparent 30%)",
-      mask: "radial-gradient(circle at var(--x, 50%) var(--y, 50%), black 0, transparent 30%)",
-      animation: "spotlight 8s ease-in-out infinite",
-    }}
-  />
-  {/* Your Content/Components */}
 </div>`,
   },
 ];

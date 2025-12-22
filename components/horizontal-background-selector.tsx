@@ -18,6 +18,9 @@ function getCleanStyle(style: React.CSSProperties): React.CSSProperties {
   if (style.background) clean.background = style.background
   if (style.backgroundImage) clean.backgroundImage = style.backgroundImage
   if (style.backgroundColor) clean.backgroundColor = style.backgroundColor
+  if (style.backgroundSize) clean.backgroundSize = style.backgroundSize
+  if (style.WebkitMaskImage) clean.WebkitMaskImage = style.WebkitMaskImage
+  if (style.maskImage) clean.maskImage = style.maskImage
   return clean
 }
 
