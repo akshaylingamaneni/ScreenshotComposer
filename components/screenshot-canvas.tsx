@@ -1336,6 +1336,60 @@ function roundRect(ctx: CanvasRenderingContext2D, x: number, y: number, width: n
   ctx.closePath()
 }
 
+type ParsedGradient = {
+  x1: number
+  y1: number
+  x2: number
+  y2: number
+  stops: Array<{ color: string; position?: number }>
+}
+
+function parseLinearGradient(gradientStr: string, width: number, height: number): ParsedGradient | null {
+  const linearMatch = gradientStr.match(/linear-gradient\s*\(\s*([^)]+)\)/)
+  if (!linearMatch) return null
+
+  const content = linearMatch[1]
+  let angle = 180
+
+  const angleMatch = content.match(/(-?\d+(?:\.\d+)?)deg/)
+  if (angleMatch) {
+    angle = parseFloat(angleMatch[1])
+  } else if (content.includes("to right")) {
+    angle = 90
+  } else if (content.includes("to left")) {
+    angle = 270
+  } else if (content.includes("to bottom")) {
+    angle = 180
+  } else if (content.includes("to top")) {
+    angle = 0
+  }
+
+  const angleRad = ((angle - 90) * Math.PI) / 180
+  const diagonal = Math.sqrt(width * width + height * height)
+  const centerX = width / 2
+  const centerY = height / 2
+
+  const x1 = centerX - (Math.cos(angleRad) * diagonal) / 2
+  const y1 = centerY - (Math.sin(angleRad) * diagonal) / 2
+  const x2 = centerX + (Math.cos(angleRad) * diagonal) / 2
+  const y2 = centerY + (Math.sin(angleRad) * diagonal) / 2
+
+  const colorStopRegex = /(#[a-fA-F0-9]{3,8}|rgba?\([^)]+\))\s*(\d+(?:\.\d+)?)?%?/g
+  const stops: Array<{ color: string; position?: number }> = []
+  let match
+
+  while ((match = colorStopRegex.exec(content)) !== null) {
+    stops.push({
+      color: match[1],
+      position: match[2] ? parseFloat(match[2]) : undefined,
+    })
+  }
+
+  if (stops.length === 0) return null
+
+  return { x1, y1, x2, y2, stops }
+}
+
 function drawCornerTexts(
   ctx: CanvasRenderingContext2D,
   canvasWidth: number,
@@ -1348,30 +1402,77 @@ function drawCornerTexts(
 
   ctx.save()
   ctx.font = `${textSettings.fontSize}px ${textSettings.fontFamily}`
-  ctx.fillStyle = textSettings.textColor
+  ctx.globalAlpha = textSettings.textOpacity
+
+  const drawTextWithStyle = (text: string, x: number, y: number) => {
+    if (textSettings.textGradient && textSettings.textGradient.trim() !== "" && textSettings.textGradient !== "none") {
+      const gradientInfo = parseLinearGradient(textSettings.textGradient, canvasWidth, canvasHeight)
+
+      if (gradientInfo) {
+        const tempCanvas = document.createElement("canvas")
+        tempCanvas.width = canvasWidth
+        tempCanvas.height = canvasHeight
+        const tempCtx = tempCanvas.getContext("2d")
+
+        if (tempCtx) {
+          const gradient = tempCtx.createLinearGradient(
+            gradientInfo.x1,
+            gradientInfo.y1,
+            gradientInfo.x2,
+            gradientInfo.y2
+          )
+
+          gradientInfo.stops.forEach((stop, i) => {
+            const offset = stop.position !== undefined
+              ? stop.position / 100
+              : i / Math.max(gradientInfo.stops.length - 1, 1)
+            gradient.addColorStop(Math.min(1, Math.max(0, offset)), stop.color)
+          })
+
+          tempCtx.fillStyle = gradient
+          tempCtx.fillRect(0, 0, canvasWidth, canvasHeight)
+
+          tempCtx.globalCompositeOperation = "destination-in"
+          tempCtx.font = ctx.font
+          tempCtx.textAlign = ctx.textAlign as CanvasTextAlign
+          tempCtx.textBaseline = ctx.textBaseline as CanvasTextBaseline
+          tempCtx.fillStyle = "black"
+          tempCtx.fillText(text, x, y)
+
+          ctx.drawImage(tempCanvas, 0, 0)
+        }
+      } else {
+        ctx.fillStyle = textSettings.textColor
+        ctx.fillText(text, x, y)
+      }
+    } else {
+      ctx.fillStyle = textSettings.textColor
+      ctx.fillText(text, x, y)
+    }
+  }
 
   if (cornerTexts.topLeft) {
     ctx.textAlign = "left"
     ctx.textBaseline = "top"
-    ctx.fillText(cornerTexts.topLeft, textPadding, textPadding)
+    drawTextWithStyle(cornerTexts.topLeft, textPadding, textPadding)
   }
 
   if (cornerTexts.topRight) {
     ctx.textAlign = "right"
     ctx.textBaseline = "top"
-    ctx.fillText(cornerTexts.topRight, canvasWidth - textPadding, textPadding)
+    drawTextWithStyle(cornerTexts.topRight, canvasWidth - textPadding, textPadding)
   }
 
   if (cornerTexts.bottomLeft) {
     ctx.textAlign = "left"
     ctx.textBaseline = "bottom"
-    ctx.fillText(cornerTexts.bottomLeft, textPadding, canvasHeight - textPadding)
+    drawTextWithStyle(cornerTexts.bottomLeft, textPadding, canvasHeight - textPadding)
   }
 
   if (cornerTexts.bottomRight) {
     ctx.textAlign = "right"
     ctx.textBaseline = "bottom"
-    ctx.fillText(cornerTexts.bottomRight, canvasWidth - textPadding, canvasHeight - textPadding)
+    drawTextWithStyle(cornerTexts.bottomRight, canvasWidth - textPadding, canvasHeight - textPadding)
   }
 
   ctx.restore()

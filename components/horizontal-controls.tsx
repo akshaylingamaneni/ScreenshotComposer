@@ -9,8 +9,23 @@ import { Slider } from "@/components/ui/slider"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Button } from "@/components/ui/button"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import type { ShadowSettings, CornerTexts, TextSettings } from "@/components/screenshot-shell-context"
 import { cn } from "@/lib/utils"
+
+const TEXT_GRADIENTS = [
+  { id: "none", name: "None" },
+  { id: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)", name: "Purple Dream" },
+  { id: "linear-gradient(90deg, #4facfe 0%, #00f2fe 100%)", name: "Ocean Blue" },
+  { id: "linear-gradient(135deg, #f093fb 0%, #f5576c 100%)", name: "Pink Sunset" },
+  { id: "linear-gradient(90deg, #fa709a 0%, #fee140 100%)", name: "Warm Flame" },
+  { id: "linear-gradient(135deg, #30cfd0 0%, #330867 100%)", name: "Deep Ocean" },
+  { id: "linear-gradient(90deg, #a8edea 0%, #fed6e3 100%)", name: "Pastel Dream" },
+  { id: "linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%)", name: "Peach" },
+  { id: "linear-gradient(90deg, #ff9a9e 0%, #fecfef 100%)", name: "Soft Pink" },
+  { id: "linear-gradient(135deg, #fbc2eb 0%, #a6c1ee 100%)", name: "Cotton Candy" },
+  { id: "linear-gradient(90deg, #fdcbf1 0%, #e6dee9 100%)", name: "Lavender" },
+]
 
 interface HorizontalControlsProps {
   format: string
@@ -351,6 +366,50 @@ export function HorizontalControls({
                             className="flex-1 px-2 py-1 text-xs border rounded"
                             placeholder="#000000"
                           />
+                        </div>
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label className="text-xs">Text Gradient</Label>
+                        <Select
+                          value={textSettings.textGradient}
+                          onValueChange={(value) => onTextSettingsChange({ ...textSettings, textGradient: value })}
+                        >
+                          <SelectTrigger size="sm" className="w-full h-8 text-xs">
+                            <SelectValue placeholder="None" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {TEXT_GRADIENTS.map((gradient) => (
+                              <SelectItem key={gradient.id} value={gradient.id} className="text-xs">
+                                <span className="flex items-center gap-2">
+                                  {gradient.id !== "none" && (
+                                    <span
+                                      className="w-4 h-4 rounded border border-border"
+                                      style={{ background: gradient.id }}
+                                    />
+                                  )}
+                                  {gradient.name}
+                                </span>
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label className="text-xs">Text Opacity</Label>
+                        <div className="flex items-center gap-3">
+                          <Slider
+                            min={0}
+                            max={1}
+                            step={0.05}
+                            value={[textSettings.textOpacity]}
+                            onValueChange={(value) => onTextSettingsChange({ ...textSettings, textOpacity: value[0] })}
+                            className="flex-1"
+                          />
+                          <span className="text-xs text-muted-foreground tabular-nums w-10 text-right">
+                            {textSettings.textOpacity.toFixed(2)}
+                          </span>
                         </div>
                       </div>
                     </div>

@@ -62,6 +62,8 @@ export default function AppLayout({
     fontSize: 24,
     textColor: "#000000",
     fontFamily: "Geist",
+    textOpacity: 1,
+    textGradient: "none",
   })
   const [canvasSize, setCanvasSize] = useState([50])
   const [selectedBackground, setSelectedBackground] = useState("top-gradient-radial")

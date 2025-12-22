@@ -21,6 +21,8 @@ export type TextSettings = {
   fontSize: number
   textColor: string
   fontFamily: string
+  textOpacity: number
+  textGradient: string
 }
 
 export type ScreenshotShellContextValue = {
