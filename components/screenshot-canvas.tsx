@@ -31,6 +31,7 @@ interface ScreenshotCanvasProps {
   cornerTexts: CornerTexts
   textSettings: TextSettings
   canvasSize: number
+  baseColor: string
   showBackgroundOnly: boolean
   onCanvasReady?: (canvas: HTMLCanvasElement) => void
 }
@@ -46,6 +47,7 @@ export function ScreenshotCanvas({
   cornerTexts,
   textSettings,
   canvasSize,
+  baseColor,
   showBackgroundOnly,
   onCanvasReady,
 }: ScreenshotCanvasProps) {
@@ -68,8 +70,7 @@ export function ScreenshotCanvas({
     const renderBackground = (size: CanvasSize) => {
       setupCanvas(canvas, ctx, size.width, size.height, pixelRatio)
       setImageDimensions(size)
-      // debugger;
-      drawBackground(ctx, size.width, size.height, backgroundPattern)
+      drawBackground(ctx, size.width, size.height, backgroundPattern, baseColor)
     }
 
     if (showBackgroundOnly || !image) {
@@ -120,7 +121,7 @@ export function ScreenshotCanvas({
     }
 
     img.src = image
-  }, [image, padding, cornerRadius, background, format, shadow, shadowSettings, cornerTexts, textSettings, showBackgroundOnly, onCanvasReady])
+  }, [image, padding, cornerRadius, background, format, shadow, shadowSettings, cornerTexts, textSettings, showBackgroundOnly, baseColor, onCanvasReady])
 
   useEffect(() => {
     drawCanvas()
@@ -227,6 +228,7 @@ function drawBackground(
   width: number,
   height: number,
   backgroundPattern: ReturnType<typeof getPatternById>,
+  customBaseColor?: string,
 ) {
   if (!backgroundPattern) {
     ctx.fillStyle = "#000000"
@@ -234,7 +236,7 @@ function drawBackground(
     return
   }
   const style = backgroundPattern.style
-  const baseColor = inferBaseColor(style)
+  const baseColor = customBaseColor === "auto" ? inferBaseColor(style) : customBaseColor || inferBaseColor(style)
   ctx.fillStyle = baseColor
   ctx.fillRect(0, 0, width, height)
 

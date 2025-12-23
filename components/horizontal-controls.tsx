@@ -36,6 +36,7 @@ interface HorizontalControlsProps {
   cornerTexts: CornerTexts
   textSettings: TextSettings
   canvasSize: number[]
+  baseColor: string
   onFormatChange: (format: string) => void
   onPaddingChange: (padding: number[]) => void
   onCornerRadiusChange: (radius: number[]) => void
@@ -44,6 +45,7 @@ interface HorizontalControlsProps {
   onCornerTextsChange: (texts: CornerTexts) => void
   onTextSettingsChange: (settings: TextSettings) => void
   onCanvasSizeChange: (size: number[]) => void
+  onBaseColorChange: (color: string) => void
 }
 
 export function HorizontalControls({
@@ -55,6 +57,7 @@ export function HorizontalControls({
   cornerTexts,
   textSettings,
   canvasSize,
+  baseColor,
   onFormatChange,
   onPaddingChange,
   onCornerRadiusChange,
@@ -63,6 +66,7 @@ export function HorizontalControls({
   onCornerTextsChange,
   onTextSettingsChange,
   onCanvasSizeChange,
+  onBaseColorChange,
 }: HorizontalControlsProps) {
   const scrollAreaRef = useRef<HTMLDivElement>(null)
   const [canScrollLeft, setCanScrollLeft] = useState(false)
@@ -154,6 +158,27 @@ export function HorizontalControls({
           <div className="flex flex-col gap-2 min-w-[140px] snap-start shrink-0">
             <Label className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Format</Label>
             <FormatSelector selected={format} onSelect={onFormatChange} />
+          </div>
+
+          <div className="flex flex-col gap-2 min-w-[160px] snap-start shrink-0">
+            <Label className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Base Color</Label>
+            <Select value={baseColor} onValueChange={onBaseColorChange}>
+              <SelectTrigger className="h-9">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="auto">Auto</SelectItem>
+                <SelectItem value="#ffffff">White</SelectItem>
+                <SelectItem value="#000000">Black</SelectItem>
+                <SelectItem value="#f3f4f6">Light Gray</SelectItem>
+                <SelectItem value="#1f2937">Dark Gray</SelectItem>
+                <SelectItem value="#ef4444">Red</SelectItem>
+                <SelectItem value="#3b82f6">Blue</SelectItem>
+                <SelectItem value="#10b981">Green</SelectItem>
+                <SelectItem value="#f59e0b">Orange</SelectItem>
+                <SelectItem value="#8b5cf6">Purple</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
 
           <div className="flex flex-col gap-2 min-w-[180px] snap-start shrink-0">

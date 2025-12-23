@@ -76,6 +76,7 @@ export default function AppLayout({
   const [canvasSize, setCanvasSize] = useState([50])
   const [selectedBackground, setSelectedBackground] = useState("top-gradient-radial")
   const [selectedFormat, setSelectedFormat] = useState("auto")
+  const [selectedBaseColor, setSelectedBaseColor] = useState("auto")
   const [canvasRef, setCanvasRef] = useState<HTMLCanvasElement | null>(null)
   const [copied, setCopied] = useState(false)
   const [showBackgroundOnly, setShowBackgroundOnly] = useState(false)
@@ -91,6 +92,7 @@ export default function AppLayout({
   const effectiveTextSettings = currentImage?.textSettings ?? { ...textSettings }
   const effectiveFormat = currentImage?.format ?? selectedFormat
   const effectiveCanvasSize = currentImage?.canvasSize ?? canvasSize[0]
+  const effectiveBaseColor = currentImage?.baseColor ?? selectedBaseColor
 
   const handleBackgroundChange = useCallback((background: string) => {
     if (applyToAll) {
@@ -228,6 +230,21 @@ export default function AppLayout({
         const newImages = [...prev]
         if (newImages[activeIndex]) {
           newImages[activeIndex] = { ...newImages[activeIndex], canvasSize: sizeValue }
+        }
+        return newImages
+      })
+    }
+  }, [activeIndex, applyToAll])
+
+  const handleBaseColorChange = useCallback((baseColor: string) => {
+    if (applyToAll) {
+      setImages((prev) => prev.map((img) => ({ ...img, baseColor })))
+      setSelectedBaseColor(baseColor)
+    } else {
+      setImages((prev) => {
+        const newImages = [...prev]
+        if (newImages[activeIndex]) {
+          newImages[activeIndex] = { ...newImages[activeIndex], baseColor }
         }
         return newImages
       })
@@ -492,6 +509,7 @@ export default function AppLayout({
         background: effectiveBackground,
         format: effectiveFormat,
         canvasSize: effectiveCanvasSize,
+        baseColor: effectiveBaseColor,
         showBackgroundOnly,
         showCanvas,
         handleImageUpload,
@@ -654,6 +672,7 @@ export default function AppLayout({
                 cornerTexts={effectiveCornerTexts}
                 textSettings={effectiveTextSettings}
                 canvasSize={[effectiveCanvasSize]}
+                baseColor={effectiveBaseColor}
                 onFormatChange={handleFormatChange}
                 onPaddingChange={handlePaddingChange}
                 onCornerRadiusChange={handleCornerRadiusChange}
@@ -662,6 +681,7 @@ export default function AppLayout({
                 onCornerTextsChange={handleCornerTextsChange}
                 onTextSettingsChange={handleTextSettingsChange}
                 onCanvasSizeChange={handleCanvasSizeChange}
+                onBaseColorChange={handleBaseColorChange}
               />
 
               <div className="px-4">

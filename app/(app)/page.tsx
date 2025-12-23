@@ -17,6 +17,7 @@ export default function Home() {
     background,
     format,
     canvasSize,
+    baseColor,
     showBackgroundOnly,
     showCanvas,
     handleImageUpload,
@@ -59,6 +60,7 @@ export default function Home() {
         cornerTexts={cornerTexts}
         textSettings={textSettings}
         canvasSize={canvasSize}
+        baseColor={baseColor}
         showBackgroundOnly={showBackgroundOnly}
         onCanvasReady={handleCanvasReady}
       />

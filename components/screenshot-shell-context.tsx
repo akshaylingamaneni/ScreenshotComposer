@@ -38,6 +38,7 @@ export type ImageItem = {
   textSettings?: TextSettings
   format?: string
   canvasSize?: number
+  baseColor?: string
 }
 
 export type ScreenshotShellContextValue = {
@@ -53,6 +54,7 @@ export type ScreenshotShellContextValue = {
   background: string
   format: string
   canvasSize: number
+  baseColor: string
   showBackgroundOnly: boolean
   showCanvas: boolean
   handleImageUpload: (event: React.ChangeEvent<HTMLInputElement>) => void
