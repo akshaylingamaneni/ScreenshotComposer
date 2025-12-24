@@ -4,6 +4,7 @@ import type React from "react"
 import { useCallback, useRef, useState } from "react"
 import { Check, ChevronDown, Copy, Download, Eye, EyeOff, FileSliders, Shuffle, Upload } from "lucide-react"
 import JSZip from "jszip"
+import posthog from "posthog-js"
 import { HorizontalControls } from "@/components/horizontal-controls"
 import { HorizontalBackgroundSelector } from "@/components/horizontal-background-selector"
 import { ImageCarousel } from "@/components/image-carousel"
@@ -95,6 +96,11 @@ export default function AppLayout({
   const effectiveBaseColor = currentImage?.baseColor ?? selectedBaseColor
 
   const handleBackgroundChange = useCallback((background: string) => {
+    posthog.capture("background_changed", {
+      background_id: background,
+      apply_to_all: applyToAll,
+      total_images: images.length,
+    })
     if (applyToAll) {
       setImages((prev) => prev.map((img) => ({ ...img, background })))
       setSelectedBackground(background)
@@ -107,7 +113,7 @@ export default function AppLayout({
         return newImages
       })
     }
-  }, [activeIndex, applyToAll])
+  }, [activeIndex, applyToAll, images.length])
 
   const handlePaddingChange = useCallback((value: number[]) => {
     const paddingValue = value[0]
@@ -206,6 +212,13 @@ export default function AppLayout({
   }, [activeIndex, applyToAll])
 
   const handleFormatChange = useCallback((format: string) => {
+    const formatDetails = getFormatById(format)
+    posthog.capture("format_changed", {
+      format_id: format,
+      format_name: formatDetails?.name,
+      format_category: formatDetails?.category,
+      apply_to_all: applyToAll,
+    })
     if (applyToAll) {
       setImages((prev) => prev.map((img) => ({ ...img, format })))
       setSelectedFormat(format)
@@ -256,6 +269,7 @@ export default function AppLayout({
     if (files && files.length > 0) {
       const newImages: ImageItem[] = []
       let loaded = 0
+      const fileTypes = Array.from(files).map((f) => f.type)
 
       Array.from(files).forEach((file) => {
         const reader = new FileReader()
@@ -269,6 +283,11 @@ export default function AppLayout({
           loaded++
 
           if (loaded === files.length) {
+            posthog.capture("image_uploaded", {
+              image_count: files.length,
+              file_types: fileTypes,
+              total_images_after: images.length + newImages.length,
+            })
             setImages((prev) => [...prev, ...newImages])
             if (images.length === 0) {
               setActiveIndex(0)
@@ -331,6 +350,15 @@ export default function AppLayout({
           : `${baseName}.png`
 
       const exportCanvas = getExportCanvas(canvasRef)
+      posthog.capture("image_exported", {
+        format_id: selectedFormat,
+        format_name: format?.name,
+        background_id: effectiveBackground,
+        has_corner_text: Object.values(effectiveCornerTexts).some(Boolean),
+        padding: effectivePadding,
+        corner_radius: effectiveCornerRadius,
+        shadow: effectiveShadow,
+      })
       const link = document.createElement("a")
       link.download = filename
       link.href = exportCanvas.toDataURL("image/png", 1.0)
@@ -340,6 +368,11 @@ export default function AppLayout({
 
   const handleExportAll = async () => {
     if (images.length === 0) return
+
+    posthog.capture("batch_export_started", {
+      image_count: images.length,
+      format_id: selectedFormat,
+    })
 
     const format = getFormatById(selectedFormat)
 
@@ -406,6 +439,10 @@ export default function AppLayout({
     handleSetActiveIndex(originalIndex)
 
     const blob = await zip.generateAsync({ type: "blob" })
+    posthog.capture("zip_export_completed", {
+      image_count: images.length,
+      format_id: selectedFormat,
+    })
     const link = document.createElement("a")
     link.download = "screenshots.zip"
     link.href = URL.createObjectURL(blob)
@@ -423,10 +460,15 @@ export default function AppLayout({
           }, "image/png")
         })
         await navigator.clipboard.write([new ClipboardItem({ "image/png": blob })])
+        posthog.capture("image_copied_to_clipboard", {
+          format_id: selectedFormat,
+          background_id: effectiveBackground,
+        })
         setCopied(true)
         setTimeout(() => setCopied(false), 2000)
       } catch (err) {
         console.error("Failed to copy:", err)
+        posthog.captureException(err)
       }
     }
   }
@@ -465,6 +507,10 @@ export default function AppLayout({
   }, [activeIndex])
 
   const handleRemoveImage = useCallback((index: number) => {
+    posthog.capture("image_removed", {
+      removed_index: index,
+      total_images_before: images.length,
+    })
     setImages((prev) => {
       const newImages = prev.filter((_, i) => i !== index)
 
@@ -480,13 +526,14 @@ export default function AppLayout({
 
       return newImages
     })
-  }, [activeIndex])
+  }, [activeIndex, images.length])
 
   const handleTogglePreview = () => {
     setShowBackgroundOnly((current) => !current)
   }
 
   const handleRandomize = () => {
+    posthog.capture("randomize_clicked")
     const randomPattern = getRandomPattern()
     handleBackgroundChange(randomPattern.id)
   }

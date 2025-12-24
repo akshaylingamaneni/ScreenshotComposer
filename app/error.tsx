@@ -3,6 +3,7 @@
 import { useEffect } from "react"
 import { FileSliders, RefreshCw, Home } from "lucide-react"
 import Link from "next/link"
+import posthog from "posthog-js"
 import { Button } from "@/components/ui/button"
 
 export default function Error({
@@ -14,6 +15,11 @@ export default function Error({
 }) {
   useEffect(() => {
     console.error(error)
+    posthog.capture("error_occurred", {
+      error_message: error.message,
+      error_digest: error.digest,
+    })
+    posthog.captureException(error)
   }, [error])
 
   return (
@@ -31,7 +37,10 @@ export default function Error({
         </p>
 
         <div className="flex flex-col sm:flex-row gap-3 justify-center">
-          <Button onClick={reset} variant="default" size="lg">
+          <Button onClick={() => {
+            posthog.capture("error_retry_clicked")
+            reset()
+          }} variant="default" size="lg">
             <RefreshCw className="h-4 w-4 mr-2" />
             Try Again
           </Button>

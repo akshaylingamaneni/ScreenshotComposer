@@ -3,6 +3,7 @@
 import { motion } from "framer-motion"
 import Link from "next/link"
 import { Github, ExternalLink } from "lucide-react"
+import posthog from "posthog-js"
 import { ScreenshotCanvas } from "@/components/screenshot-canvas"
 import { useScreenshotShell } from "@/components/screenshot-shell-context"
 import { ShowcaseSlider } from "@/components/showcase-slider"
@@ -66,6 +67,7 @@ export default function Home() {
                   href="https://github.com/akshaylingamaneni/ScreenshotComposer"
                   target="_blank"
                   rel="noopener noreferrer"
+                  onClick={() => posthog.capture("github_link_clicked")}
                   className="inline-flex items-center gap-1.5 rounded-full border border-white/15 bg-neutral-950/45 px-3 py-1 text-xs text-white/60 transition-colors hover:border-white/25 hover:bg-neutral-950/65 hover:text-white/80"
                 >
                   <Github className="h-3 w-3" />
