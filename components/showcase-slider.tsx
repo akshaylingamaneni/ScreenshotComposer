@@ -45,7 +45,9 @@ export function ShowcaseSlider({ showUploadOverlay, onImageUpload }: ShowcaseSli
   const colors = useColorExtraction(showcaseItems)
   const currentColors = useCurrentColors(colors, showcaseItems[currentIndex]?.id)
 
-  const slideWidth = windowWidth > 768 ? 504 : windowWidth > 640 ? 444 : 352
+  const cardWidth = windowWidth > 768 ? 440 : windowWidth > 640 ? 380 : 320
+  const gap = windowWidth > 768 ? 96 : windowWidth > 640 ? 64 : 48
+  const slideWidth = cardWidth + gap
 
   return (
     <div className="relative h-full w-full">
@@ -83,8 +85,13 @@ export function ShowcaseSlider({ showUploadOverlay, onImageUpload }: ShowcaseSli
         onTouchEnd={handleDragEnd}
       >
         <motion.div
-          className="flex items-center gap-12 px-[calc(50vw-160px)] sm:gap-16 sm:px-[calc(50vw-190px)] md:gap-24 md:px-[calc(50vw-220px)]"
-          style={{ transformStyle: "preserve-3d" }}
+          className="flex items-center"
+          style={{
+            transformStyle: "preserve-3d",
+            gap: `${gap}px`,
+            paddingLeft: `calc(50vw - ${cardWidth / 2}px)`,
+            paddingRight: `calc(50vw - ${cardWidth / 2}px)`,
+          }}
           animate={{
             x: -currentIndex * slideWidth + dragX,
           }}
