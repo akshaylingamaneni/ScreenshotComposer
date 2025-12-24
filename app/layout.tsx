@@ -51,7 +51,7 @@ export const metadata: Metadata = {
     description: siteDescription,
     images: [
       {
-        url: `${siteUrl}/opengraph-image`,
+        url: `${siteUrl}/og-image.png`,
         width: 1200,
         height: 630,
         alt: `${siteName} - Create beautiful screenshots with gradient backgrounds`,
@@ -62,7 +62,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: `${siteName} - Beautiful Screenshot Backgrounds`,
     description: siteDescription,
-    images: [`${siteUrl}/opengraph-image`],
+    images: [`${siteUrl}/og-image.png`],
     creator: "@screenshotcomposer",
   },
   robots: {
