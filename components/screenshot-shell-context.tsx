@@ -65,6 +65,7 @@ export type ScreenshotShellContextValue = {
   showCanvas: boolean
   handleImageUpload: (event: React.ChangeEvent<HTMLInputElement>) => void
   handleCreateTextItem: () => void
+  handleCreateOCRTextItem: (extractedText: string) => void
   handleTextUpdate: (updates: Partial<ImageItem>) => void
   handleCanvasReady: (canvas: HTMLCanvasElement, imageId?: string) => void
   setActiveIndex: (index: number) => void

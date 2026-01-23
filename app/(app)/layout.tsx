@@ -2,7 +2,7 @@
 
 import type React from "react"
 import { useCallback, useRef, useState } from "react"
-import { Check, ChevronDown, Copy, Download, Eye, EyeOff, FileSliders, Shuffle, Type, Upload } from "lucide-react"
+import { Check, ChevronDown, Copy, Download, Eye, EyeOff, FileSliders, ScanText, Shuffle, Type, Upload } from "lucide-react"
 import JSZip from "jszip"
 import posthog from "posthog-js"
 import { HorizontalControls } from "@/components/horizontal-controls"
@@ -17,6 +17,7 @@ import { getFormatById } from "@/lib/formats"
 import { getRandomPattern } from "@/lib/patterns"
 import { DEFAULT_TEXT_THEME_ID } from "@/lib/text-themes"
 import { preloadTextHighlighter } from "@/lib/text-highlighter"
+import { OCRExtractor } from "@/components/ocr-extractor"
 
 function getExportCanvas(canvas: HTMLCanvasElement): HTMLCanvasElement {
   const logicalWidth = Number.parseInt(canvas.dataset.logicalWidth ?? "", 10)
@@ -96,6 +97,7 @@ export default function AppLayout({
   const [copied, setCopied] = useState(false)
   const [showBackgroundOnly, setShowBackgroundOnly] = useState(false)
   const [applyToAll, setApplyToAll] = useState(true)
+  const [ocrModalOpen, setOcrModalOpen] = useState(false)
 
 
   const activeItem = images[activeIndex] ?? null
@@ -402,6 +404,26 @@ export default function AppLayout({
     setShowBackgroundOnly(false)
   }, [images.length])
 
+  const handleCreateOCRTextItem = useCallback((extractedText: string) => {
+    const newItem: ImageItem = {
+      id: `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+      src: "",
+      name: "Extracted Text",
+      type: "text",
+      text: extractedText,
+      language: "plaintext",
+      themeId: DEFAULT_TEXT_THEME_ID,
+    }
+    posthog.capture("ocr_text_item_created", {
+      text_length: extractedText.length,
+      total_items_after: images.length + 1,
+    })
+    setImages((prev) => [...prev, newItem])
+    setActiveIndex(images.length)
+    setImage(null)
+    setShowBackgroundOnly(false)
+  }, [images.length])
+
   const handleTextUpdate = useCallback((updates: Partial<ImageItem>) => {
     setImages((prev) => {
       const next = [...prev]
@@ -610,6 +632,7 @@ export default function AppLayout({
         showCanvas,
         handleImageUpload,
         handleCreateTextItem,
+        handleCreateOCRTextItem,
         handleTextUpdate,
         handleCanvasReady,
         setActiveIndex: handleSetActiveIndex,
@@ -754,6 +777,17 @@ export default function AppLayout({
                         <Type className="h-3.5 w-3.5 mr-2" />
                         Add Text Card
                       </Button>
+                      {activeItem?.type === "image" && activeItem.src && (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="bg-transparent"
+                          onClick={() => setOcrModalOpen(true)}
+                        >
+                          <ScanText className="h-3.5 w-3.5 mr-2" />
+                          Extract Text
+                        </Button>
+                      )}
                     </>
                   )}
                   {hasMultipleImages && (
@@ -799,6 +833,13 @@ export default function AppLayout({
           </aside>
         </div>
       </div>
+
+      <OCRExtractor
+        open={ocrModalOpen}
+        onOpenChange={setOcrModalOpen}
+        imageSource={activeItem?.type === "image" ? activeItem.src : null}
+        onTextExtracted={handleCreateOCRTextItem}
+      />
     </ScreenshotShellProvider>
   )
 }
